@@ -61,7 +61,7 @@ def start_container(name, image_name="mzinga", gpu_id=None):
     )
     # wait for the container to start, and if it fails, abort
     time.sleep(5)
-    assert child.poll() is None
+    assert child.poll() is None, f"stdout:\n{child.stdout.read()}\nstderr:\n{child.stderr.read()}"
     logging.info("start %s, PID %d", name, child.pid)
     return child
 
@@ -187,6 +187,8 @@ def play_game(white_image, black_image, white_gpu=None, black_gpu=None):
     referee.kill()
     white.kill()
     black.kill()
+    # wait for Docker to clean up containers
+    time.sleep(5)
 
     return outcome
 
