@@ -14,8 +14,8 @@ logging.basicConfig(level=logging.INFO)
 
 
 GAME_TYPE = "Base+MLP"
-MOVE_TIMEOUT_S = 5
-MAX_PLIES = 100
+MOVE_TIMEOUT_S = 1
+MAX_PLIES = 10
 
 
 def read_message(process, timeout=None):
@@ -52,7 +52,7 @@ def start_container(name, image_name="mzinga", gpu_id=None):
     gpu_string = f"--gpus {gpu_id}" if gpu_id is not None else ""
     child = sp.Popen(
         shlex.split(
-            f"docker run --name {name} -i --rm {gpu_string} -w /app {image_name}"
+            f"docker run --name {name} -i --rm {gpu_string} {image_name}"
         ),
         stdin=sp.PIPE,
         stdout=sp.PIPE,
@@ -83,8 +83,9 @@ class GameOucome(object):
 def do_play_game(referee, white, black):
     # Start the game for each engine
     for sub in [referee, white, black]:
+        logging.info(f"send `newgame` to {sub}")
         send_message(f"newgame {GAME_TYPE}", sub)
-        msg = read_message(sub)
+        msg = read_message(sub, timeout=1)
 
     # The string describing the status of the board
     game_string = ""
@@ -177,16 +178,16 @@ def play_game(white_image, black_image, white_gpu=None, black_gpu=None):
 
     # Get the greetings
     for sub in [referee, white, black]:
-        msg = read_message(sub)
+        msg = read_message(sub, timeout=1)
         # Check the they export all the extensions
         # FIXME: handle errors gracefully
         assert msg.split("\n")[1].strip() == "Mosquito;Ladybug;Pillbug"
 
     outcome = do_play_game(referee, white, black)
 
-    referee.kill()
-    white.kill()
-    black.kill()
+    for container in ["white", "black", "referee"]:
+        logging.info(f"killing container {container}")
+        sp.run(["docker", "kill", container])
     # wait for Docker to clean up containers
     time.sleep(5)
 
