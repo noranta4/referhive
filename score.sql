@@ -34,6 +34,12 @@ ORDER BY total_score DESC;
 .print ====================== Matches detail =========================
 SELECT white, black, outcome FROM games;
 
+CREATE VIEW IF NOT EXISTS game_stats AS
+SELECT
+    white, black, outcome, elapsed_s,
+    length(game_string) - length(replace(game_string, ';', '')) - 2 AS number_of_plies
+FROM games;
+
 
 .print
 .print How many times are outcomes occurring?
@@ -41,17 +47,17 @@ SELECT outcome, count(*) FROM games GROUP BY outcome;
 
 .print
 .print Game length stats
-SELECT avg(elapsed_s) as avg_time, max(elapsed_s) as max_time, min(elapsed_s) as min_time
-FROM games;
+SELECT avg(number_of_plies) as avg_plies, max(number_of_plies) as max_plies, min(number_of_plies) as min_plies
+FROM game_stats;
 
 .print Shortest game
-SELECT white, black, outcome, elapsed_s
-FROM games
+SELECT white, black, outcome, number_of_plies
+FROM game_stats
 GROUP BY ''
-HAVING elapsed_s = min(elapsed_s);
+HAVING number_of_plies = min(number_of_plies);
 
 .print Longest game
-SELECT white, black, outcome, elapsed_s
-FROM games
+SELECT white, black, outcome, number_of_plies
+FROM game_stats
 GROUP BY ''
-HAVING elapsed_s = max(elapsed_s);
+HAVING number_of_plies = max(number_of_plies);
