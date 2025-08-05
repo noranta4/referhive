@@ -1,3 +1,8 @@
+.print Total play time
+SELECT
+    timediff(datetime(sum(elapsed_s), 'unixepoch'), datetime(0, 'unixepoch')) as total_time
+FROM games;
+
 CREATE VIEW IF NOT EXISTS white_scores AS
 SELECT
     timestamp,
@@ -21,6 +26,7 @@ SELECT
 FROM games;
 
 
+.print
 .print ====================== Leaderboard ===========================
 SELECT player, sum(score) AS total_score
 FROM (
