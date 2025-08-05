@@ -5,7 +5,10 @@ build-all:
 
 run-container name:
     just build-container {{name}}
-    docker run -it --rm -w /app {{name}}
+    docker run -i --rm {{name}}
 
 build-container name:
     docker build -t {{name}} containers/{{name}}
+
+killall:
+    docker kill $(docker ps -sq)

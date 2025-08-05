@@ -14,8 +14,8 @@ logging.basicConfig(level=logging.INFO)
 
 
 GAME_TYPE = "Base+MLP"
-MOVE_TIMEOUT_S = 1
-MAX_PLIES = 10
+MOVE_TIMEOUT_S = 5
+MAX_PLIES = 100
 
 
 def read_message(process, timeout=None):
@@ -50,10 +50,10 @@ def send_message(msg, process):
 
 def start_container(name, image_name="mzinga", gpu_id=None):
     gpu_string = f"--gpus {gpu_id}" if gpu_id is not None else ""
+    cmd = f"docker run --name {name} -i --rm {gpu_string} {image_name}"
+    logging.debug("running: `%s`", cmd)
     child = sp.Popen(
-        shlex.split(
-            f"docker run --name {name} -i --rm {gpu_string} {image_name}"
-        ),
+        shlex.split(cmd),
         stdin=sp.PIPE,
         stdout=sp.PIPE,
         stderr=sp.PIPE,
@@ -83,7 +83,6 @@ class GameOucome(object):
 def do_play_game(referee, white, black):
     # Start the game for each engine
     for sub in [referee, white, black]:
-        logging.info(f"send `newgame` to {sub}")
         send_message(f"newgame {GAME_TYPE}", sub)
         msg = read_message(sub, timeout=1)
 
@@ -117,14 +116,14 @@ def do_play_game(referee, white, black):
             if is_white:
                 return GameOucome(
                     Outcome.BLACK_WINS,
-                    reason="white proposed invalid move",
+                    reason=f"white proposed invalid move: `{move}`",
                     game_string=game_string,
                     elapsed_s=time.time() - start_time,
                 )
             else:
                 return GameOucome(
                     Outcome.WHITE_WINS,
-                    reason="black proposed invalid move",
+                    reason=f"black proposed invalid move: `{move}`",
                     game_string=game_string,
                     elapsed_s=time.time() - start_time,
                 )
@@ -178,7 +177,9 @@ def play_game(white_image, black_image, white_gpu=None, black_gpu=None):
 
     # Get the greetings
     for sub in [referee, white, black]:
-        msg = read_message(sub, timeout=1)
+        logging.debug("Getting the greeting")
+        msg = read_message(sub, timeout=10)
+        logging.debug("Got %s", msg)
         # Check the they export all the extensions
         # FIXME: handle errors gracefully
         assert msg.split("\n")[1].strip() == "Mosquito;Ladybug;Pillbug"
