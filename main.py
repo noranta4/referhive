@@ -24,6 +24,7 @@ def read_message(process, timeout=None):
     msg = ""
     line = ""
     line_cnt = 0
+    is_error = False
     start = time.time()
     while line != "ok":
         if timeout is not None and time.time() - start > timeout:
@@ -31,13 +32,15 @@ def read_message(process, timeout=None):
         line = process.stdout.readline().strip()
         if line:
             if line.startswith("err"):
-                raise ValueError(f"protocol error: {msg}")
+                is_error = True
             msg += line + "\n"
             line_cnt += 1
             if line_cnt > MAX_LINES:
                 raise IOError("Too many lines")
         time.sleep(0.1)
     msg = msg.strip("\nok")
+    if is_error:
+        raise ValueError(f"protocol error: {msg}")
     logging.debug("message from %d:\n%s", process.pid, textwrap.indent(msg, "    "))
     return msg
 
@@ -90,7 +93,7 @@ def do_play_game(referee, white, black):
     game_string = ""
     start_time = time.time()
 
-    for ply in range(2 * MAX_PLIES):
+    for ply in range(MAX_PLIES):
         is_white = ply % 2 == 0
         logging.info("ply: %d is_white: %d", ply, is_white)
         if is_white:
