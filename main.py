@@ -213,6 +213,18 @@ def get_db():
 
 def play_tournament(match_list, white_gpu, black_gpu):
     for white, black in match_list:
+        with get_db() as db:
+            res = db.execute(
+                "SELECT timestamp FROM games WHERE white = ? AND black = ?",
+                [white, black]
+            )
+            if res.fetchone() is not None:
+                logging.info(
+                    "match between %s and %s already played",
+                    white, black
+                )
+                continue
+
         date = datetime.datetime.now().isoformat()
         logging.info(
             "playing game between %s (white) (gpu %s) and %s (black) (gpu %s)",
