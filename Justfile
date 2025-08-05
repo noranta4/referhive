@@ -1,3 +1,6 @@
+scores:
+    sqlite3 -column -header games.db < score.sql | less
+
 build-all:
     just build-container mzinga
     just build-container mzinga-cpp

@@ -33,3 +33,25 @@ ORDER BY total_score DESC;
 .print
 .print ====================== Matches detail =========================
 SELECT white, black, outcome FROM games;
+
+
+.print
+.print How many times are outcomes occurring?
+SELECT outcome, count(*) FROM games GROUP BY outcome;
+
+.print
+.print Game length stats
+SELECT avg(elapsed_s) as avg_time, max(elapsed_s) as max_time, min(elapsed_s) as min_time
+FROM games;
+
+.print Shortest game
+SELECT white, black, outcome, elapsed_s
+FROM games
+GROUP BY ''
+HAVING elapsed_s = min(elapsed_s);
+
+.print Longest game
+SELECT white, black, outcome, elapsed_s
+FROM games
+GROUP BY ''
+HAVING elapsed_s = max(elapsed_s);
