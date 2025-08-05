@@ -67,3 +67,9 @@ SELECT white, black, outcome, number_of_plies
 FROM game_stats
 GROUP BY ''
 HAVING number_of_plies = max(number_of_plies);
+
+.print
+.print ======================= Errors ==========================
+select white, black, outcome, outcome_reason, game_string
+from games
+where outcome_reason != 'normal ending';

@@ -1,5 +1,5 @@
-scores:
-    sqlite3 -column -header games.db < score.sql | less
+report:
+    sqlite3 -column -header games.db < report.sql | less
 
 build-all:
     just build-container mzinga
