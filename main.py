@@ -174,7 +174,7 @@ def do_play_game(referee, white, black):
 
 
 def play_game(white_image, black_image, white_gpu=None, black_gpu=None):
-    referee = start_container("referee")
+    referee = start_container("referee", image_name="nokamute")
     white = start_container("white", white_image, gpu_id=white_gpu)
     black = start_container("black", black_image, gpu_id=black_gpu)
 
